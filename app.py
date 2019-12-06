@@ -73,10 +73,6 @@ def delete_item(item_id):
     return jsonify(ToDoService().delete(item_id))
 
 
-@app.route("/new/<id>", methods=["POST"])
-def new_item(id):
-    return 'success'
-
 
 if __name__ == "__main__":
     Schema()
