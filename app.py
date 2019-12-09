@@ -1,10 +1,11 @@
-from flask import Flask, request, jsonify, render_template
+# from flask import *
+from flask import Flask, request, jsonify, render_template,make_response, session
 from service import ToDoService
 from models import Schema
 import json,requests
 from urllib import parse
 from datetime import datetime, timedelta 
-
+from http import cookies
 
 
 # app = Flask(__name__)
@@ -71,22 +72,34 @@ def update_item(item_id):
 def delete_item(item_id):
     return jsonify(ToDoService().delete(item_id))
 
-
 @app.route('/')
 def index():
     dayCheck = 1000
     json_data = fetch_offerlist()
     if json_data is not None:
-        return render_template('success.html', json_data = json_data, dayCheck= dayCheck)
+        resp = make_response(render_template('success.html', json_data = json_data, dayCheck= dayCheck))
+        resp.set_cookie('API Provider', 'Affise')# setting cookie data
+        return resp
     else:
         return 'Something went wrong with api call.'
 
-    
+
+@app.route('/getCookie/')
+def get_cookie():
+    username = request.cookies.get('userCook')
+    return username
+
+@app.route('/setSess/')
+def setSess():
+    session.pop('name',None) # delete session data 
+    session['email'] = 'email#1@gmail.com'  
+    return render_template('cookie-session.html')
+
+
 def fetch_offerlist():
     x = datetime.now()
     today = x.strftime("%Y-%m-%d")
     yesterday = (datetime.now() - timedelta(1)).strftime('%Y-%m-%d')
-
     payload = {}
     payload['limit'] = '500'
     payload['filter[date_from]'] = yesterday
@@ -111,5 +124,7 @@ def fetch_offerlist():
 
 if __name__ == "__main__":
     Schema()
+    app.secret_key = '$$this#is#my#secret#key$$'
+    app.config['SESSION_TYPE'] = 'filesystem'
     app.run(debug=True, port=8888)
 # https://blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-iii-web-forms

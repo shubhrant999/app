@@ -1,0 +1,12 @@
+<html>
+    <head>
+        <title></title>
+    </head>
+    <body>
+        {% if 'email' in session  %}        
+            <p>{{ session['email'] }}</p>
+        {% else %}
+            <p>Wrong data</p>
+        {% endif %}
+    </body>
+</html>
