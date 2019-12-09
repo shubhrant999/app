@@ -1,8 +1,11 @@
 from flask import Flask, request, jsonify, render_template
 from service import ToDoService
 from models import Schema
-
 import json,requests
+from urllib import parse
+from datetime import datetime, timedelta 
+
+
 
 # app = Flask(__name__)
 app = Flask(__name__, template_folder='templates')
@@ -37,21 +40,17 @@ app = Flask(__name__, template_folder='templates')
 #     return 'Updated successfully'
 
 
-@app.route('/')
-def index():
-    return render_template('index.html')
-
+# @app.route('/test')
+# def index():
+#     return render_template('index.html')
 
 @app.route('/login', methods=["POST"])
 def login():
     if request.method=='POST':
-        name = request.form['name']
-        password = request.form['pwd']
-        mydic = {name,password}
-        return render_template('success.html', data=mydic)
+        result = request.form      
+        return render_template('success.html', result=result)
     else:
         return render_template('success.html', name='wrong method type')
-
 
 @app.route("/todo", methods=["GET"])
 def list_todo():
@@ -71,6 +70,42 @@ def update_item(item_id):
 @app.route("/todo/<item_id>", methods=["DELETE"])
 def delete_item(item_id):
     return jsonify(ToDoService().delete(item_id))
+
+
+@app.route('/')
+def index():
+    dayCheck = 1000
+    json_data = fetch_offerlist()
+    if json_data is not None:
+        return render_template('success.html', json_data = json_data, dayCheck= dayCheck)
+    else:
+        return 'Something went wrong with api call.'
+
+    
+def fetch_offerlist():
+    x = datetime.now()
+    today = x.strftime("%Y-%m-%d")
+    yesterday = (datetime.now() - timedelta(1)).strftime('%Y-%m-%d')
+
+    payload = {}
+    payload['limit'] = '500'
+    payload['filter[date_from]'] = yesterday
+    payload['filter[date_to]'] = today
+    payload['slice[0]'] = 'offer'
+    payload['orderType'] = 'desc'  
+    payload['order[0]'] = 'raw' 
+    payload['page'] = 1
+    endpoint = 'http://api.xapads.affise.com/3.0/stats/custom'
+    if payload is not None:
+      url = endpoint + '?' + parse.urlencode(payload)
+    response = requests.get(url, headers={'API-Key': 'e07d9cae9b1d6191e29b7597c59b837ce2fb784c'}) 
+    
+    json_data = response.json() if response and response.status_code == 200 else None
+    return json_data
+    
+
+
+
 
 
 

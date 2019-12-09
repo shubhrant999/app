@@ -1,7 +1,64 @@
 <html>
+        <head>
+            <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+            <title>Affise Count Report</title>     
+            <script src="http://code.jquery.com/jquery-1.10.2.js"></script>
+            <script src="http://code.jquery.com/ui/1.11.0/jquery-ui.js"></script>
+            <link rel="stylesheet" href="http://code.jquery.com/ui/1.11.0/themes/smoothness/jquery-ui.css">            
+           <script src="https://cdn.datatables.net/1.10.10/js/jquery.dataTables.min.js"></script>
+            <link rel="stylesheet" href="https://cdn.datatables.net/1.10.10/css/jquery.dataTables.min.css">
+            
+            <style>
+              .dataTables_length {
+                display:none;
+              }
+              #example_filter{
+                display: none
+              }                       
+            </style>
+            <script>
+              $(document).ready(function(){ 
+                $('#example').DataTable({
+                  bInfo: false, 
+                  bLengthChange: false,
+                  bPaginate: false,
+                  pageLength: 100,
+                  dom: 'Bfrtip',
+                  order: [[ 1, "desc" ]],               
+                });
+              } );   
+            </script> 
+        </head>
+
     <body>
-        {% for x in data %}
-        <p>{{ x }}</p>
-        {% endfor %}
+
+        <table id="example" class="display" style="width:100%">
+            <thead>
+                <tr>
+                    <th> OfferID </th>  
+                    <th> Offer Name </th> 
+                    <th> Clicks </th> 
+                    <th> Conversions </th> 
+                    <th> CR </th>
+                </tr>
+            </thead>
+            <body>                        
+                {% if json_data and 'stats' in json_data %}
+                    {% for stat in json_data['stats'] %}
+                        {% if stat['actions']['total'].get('count') > dayCheck %}
+                            <tr>
+                                <td>{{ stat['slice']['offer'].get('id') }}</td>
+                                <td>{{ stat['slice']['offer'].get('title') }}</td>
+                                <td>{{ stat['traffic'].get('raw') }}</td>
+                                <td>{{ stat['actions']['total'].get('count') }}</td>      
+                                <td>{{ stat['cr'].get('total') }}</td>
+                            </tr>
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+            </body> 
+</table>     
+
+        
     </body>
 </html>
